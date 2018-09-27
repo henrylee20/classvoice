@@ -129,6 +129,9 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<Class> getClasses(Student student) {
         List<String> classIds = student.getClassIds();
+        if (classIds == null) {
+            return new ArrayList<>();
+        }
         List<Class> classes = new ArrayList<>();
 
         boolean isChanged = false;

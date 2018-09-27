@@ -130,6 +130,11 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public List<Class> getClasses(Teacher teacher) {
         List<String> classIds = teacher.getClassIds();
+
+        if (classIds == null) {
+            return new ArrayList<>();
+        }
+
         List<Class> classes = new ArrayList<>();
 
         boolean isChanged = false;

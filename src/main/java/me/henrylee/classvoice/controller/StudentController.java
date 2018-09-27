@@ -217,6 +217,9 @@ public class StudentController {
 
         List<UserVoiceInfo> result = new ArrayList<>();
         List<String> voiceIds = student.getVoiceIds();
+        if (voiceIds == null) {
+            voiceIds = new ArrayList<>();
+        }
         for (String voiceId : voiceIds) {
             VoiceInfo voiceInfo = voiceInfoService.getVoiceInfo(voiceId);
             if (voiceInfo == null) {
