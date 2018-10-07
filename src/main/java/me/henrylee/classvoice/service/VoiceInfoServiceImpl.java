@@ -35,7 +35,7 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
 
     private boolean prepareWavFile(byte[] voice, VoiceInfo voiceInfo) {
 
-        String mp3_path = String.format("/tmp/tmp.%s.%s.mp3", voiceInfo.getStudentId(), voiceInfo.getQuestionId());
+        String mp3_path;
         mp3_path = voiceInfo.getPath().substring(0, voiceInfo.getPath().lastIndexOf(".")) + ".mp3";
 
         try {
@@ -87,13 +87,23 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
     }
 
     @Override
-    public VoiceInfo saveVoice(byte[] voice, String studentId, String questionId) {
-        VoiceInfo voiceInfo = new VoiceInfo();
-        voiceInfo.setStudentId(studentId);
-        voiceInfo.setQuestionId(questionId);
-        voiceInfo.setPath(String.format("%s/voice.%s.%s.wav", this.voiceRoot, studentId, questionId)); // TODO voice save root path
+    public VoiceInfo saveVoice(byte[] voice, VoiceInfo baseInfo) {
+
+        List<VoiceInfo> voices = voiceInfoRepository.findByStudentId(baseInfo.getStudentId());
+        for (VoiceInfo info : voices) {
+            if (info.getQuestionId().equals(baseInfo.getQuestionId())) {
+                return null;
+            }
+        }
+
+        VoiceInfo voiceInfo = baseInfo;
+
+        voiceInfo = voiceInfoRepository.insert(voiceInfo);
+
+        voiceInfo.setPath(String.format("%s/voice.%s.wav", this.voiceRoot, voiceInfo.getId()));
 
         if (!prepareWavFile(voice, voiceInfo)) {
+            voiceInfoRepository.deleteById(voiceInfo.getId());
             return null;
         }
 
@@ -101,12 +111,12 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
         if (voiceOperator == null) {
             logger.error("Cannot get ASR class");
-            return null;
+        } else {
+            String result = voiceOperator.ASR(voiceInfo.getPath());
+            voiceInfo.setContent(result);
         }
-        String result = voiceOperator.ASR(voiceInfo.getPath());
-        voiceInfo.setContent(result);
 
-        voiceInfoRepository.insert(voiceInfo);
+        voiceInfoRepository.save(voiceInfo);
 
         return voiceInfo;
     }

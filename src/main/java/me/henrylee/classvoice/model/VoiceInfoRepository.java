@@ -8,6 +8,5 @@ import java.util.List;
 @Repository
 public interface VoiceInfoRepository extends MongoRepository<VoiceInfo, String> {
     List<VoiceInfo> findByStudentId(String studentId);
-
     List<VoiceInfo> findByQuestionId(String questionId);
 }

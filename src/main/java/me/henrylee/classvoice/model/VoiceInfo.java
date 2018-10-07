@@ -12,6 +12,11 @@ public class VoiceInfo {
     private String questionId;
     private String feedback;
 
+    private String openPageTime;
+    private String startRecTime;
+    private String stopRecTime;
+    private String recvTime;
+
     public String getId() {
         return id;
     }
@@ -58,5 +63,37 @@ public class VoiceInfo {
 
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+
+    public String getOpenPageTime() {
+        return openPageTime;
+    }
+
+    public void setOpenPageTime(String openPageTime) {
+        this.openPageTime = openPageTime;
+    }
+
+    public String getStartRecTime() {
+        return startRecTime;
+    }
+
+    public void setStartRecTime(String startRecTime) {
+        this.startRecTime = startRecTime;
+    }
+
+    public String getStopRecTime() {
+        return stopRecTime;
+    }
+
+    public void setStopRecTime(String stopRecTime) {
+        this.stopRecTime = stopRecTime;
+    }
+
+    public String getRecvTime() {
+        return recvTime;
+    }
+
+    public void setRecvTime(String recvTime) {
+        this.recvTime = recvTime;
     }
 }

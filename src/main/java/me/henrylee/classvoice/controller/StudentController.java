@@ -133,6 +133,9 @@ public class StudentController {
     @RequestMapping(method = RequestMethod.POST, value = "/{token}/uploadVoice")
     public StringResponse uploadVoice(@PathVariable String token,
                                       @RequestParam("questionId") String questionId,
+                                      @RequestParam("openPageTime") String openPageTime,
+                                      @RequestParam("startRecTime") String startRecTime,
+                                      @RequestParam("stopRecTime") String stopRecTime,
                                       @RequestParam("uploadFile") MultipartFile file) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -163,8 +166,15 @@ public class StudentController {
             return new StringResponse(ErrMsg.SERVER_ERR);
         }
 
+        VoiceInfo voiceInfo = new VoiceInfo();
 
-        VoiceInfo voiceInfo = voiceInfoService.saveVoice(voiceData, student.getId(), questionId);
+        voiceInfo.setStudentId(student.getId());
+        voiceInfo.setQuestionId(questionId);
+        voiceInfo.setOpenPageTime(openPageTime);
+        voiceInfo.setStartRecTime(startRecTime);
+        voiceInfo.setStopRecTime(stopRecTime);
+
+        voiceInfo = voiceInfoService.saveVoice(voiceData, voiceInfo);
         if (voiceInfo == null) {
             logger.info("save voice failed. studentId: {}, questionId: {}", student.getId(), questionId);
             return new StringResponse(ErrMsg.SERVER_ERR);
@@ -287,7 +297,7 @@ public class StudentController {
     @RequestMapping(method = RequestMethod.GET, value = "/getAccuracyTmp")
     public StringResponse getAccuracyTmp(@RequestParam("answer") String answer,
                                          @RequestParam("questionId") String questionId) {
-        double result = studentService.getAccuracy(questionId, answer);
+        double result = 0.5; // TODO now is a fake interface. studentService.getAccuracy(questionId, answer);
         return new StringResponse(ErrMsg.OK, (new Double(result)).toString());
     }
 }
