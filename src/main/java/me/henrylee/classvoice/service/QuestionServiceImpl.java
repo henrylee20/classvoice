@@ -50,6 +50,25 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    public Question modQuestion(Question question) {
+        if (!question.checkBaseInfo()) {
+            logger.info("Question base info not set. Question info: {}", question.toString());
+            return null;
+        }
+
+        if (!questionRepository.findById(question.getId()).isPresent()) {
+            logger.info("Question not found. Question info: {}", question.toString());
+            return null;
+        }
+
+        Question result = questionRepository.save(question);
+        if (result == null) {
+            logger.warn("insert question into db failed. Class info: {}", question.toString());
+        }
+        return result;
+    }
+
+    @Override
     public boolean delQuestion(Question question) {
         questionRepository.deleteById(question.getId());
         return true;

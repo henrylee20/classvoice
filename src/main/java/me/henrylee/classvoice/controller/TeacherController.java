@@ -99,6 +99,25 @@ public class TeacherController {
         return new QuestionResponse(ErrMsg.OK, question);
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = "/{token}/modQuestion")
+    public QuestionResponse modQuestion(@PathVariable String token,
+                                        @RequestBody Question question) {
+        Teacher teacher = teacherService.getTeacher(token);
+        if (teacher == null) {
+            logger.warn("token auth failed. token: " + token);
+            return new QuestionResponse(ErrMsg.USER_TOKEN_ERR);
+        }
+
+        question = questionService.modQuestion(question);
+        if (question == null) {
+            logger.warn("add question to question db failed.");
+            return new QuestionResponse(ErrMsg.DB_DATA_NOT_FOUND);
+        }
+
+        return new QuestionResponse(ErrMsg.OK, question);
+    }
+
+
     @RequestMapping(method = RequestMethod.GET, value = "/{token}/addQuestionToClass")
     public QuestionListResponse addQuestionToClass(@PathVariable String token,
                                                    @RequestParam("classId") String classId,

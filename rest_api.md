@@ -430,7 +430,7 @@
         * 请求方式
             * `POST`
              
-        * 参数列表
+        * URL参数
             * `token`: 会话token
             
         * 请求数据
@@ -457,7 +457,7 @@
         * 请求方式
             * `POST`: application/json
              
-        * 参数列表
+        * URL参数
             * `token`: 会话token
             
         * 请求数据
@@ -489,3 +489,42 @@
         * 错误代码说明
             * 0: 成功，`question`字段携带课堂信息
             * 20: 失败，服务器无法获取到数据
+
+* 修改问题 
+    * `/teacher/{token}/modQuestion`
+        * 请求方式
+            * `POST`: application/json
+             
+        * URL参数
+            * `token`: 会话token
+            
+        * 请求数据
+        
+        请求数据为`Question`数据类型，有以下要求:
+        
+            1. `id`字段必填，且为已经存在的问题id
+            2. `desc`字段必填
+            3. `answer`字段必填
+            4. 其他字段选填
+        
+        ```
+        {
+            "id": 问题id(String),
+            "desc": 问题描述(String),
+            "answer": 标准答案(String),
+            ...
+        }
+        ```
+            
+        * 返回值
+        ```
+        {
+            "err": 错误代码(int),
+            "errMsg": 错误信息(String),
+            "question": 问题信息(Question)
+        }
+        ```
+        
+        * 错误代码说明
+            * 0: 成功，`question`字段携带课堂信息
+            * 21: 失败，未找到此id，或者有必填字段未填写

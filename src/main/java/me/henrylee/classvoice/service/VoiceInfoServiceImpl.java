@@ -9,10 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Future;
 
 @Service
 public class VoiceInfoServiceImpl implements VoiceInfoService {
@@ -140,8 +143,9 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         return data;
     }
 
+    @Async
     @Override
-    public String ASR(VoiceInfo voiceInfo) {
+    public Future<String> ASR(VoiceInfo voiceInfo) {
         // ASR voice to text
         VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
         if (voiceOperator == null) {
@@ -152,7 +156,7 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
             voiceInfoRepository.save(voiceInfo);
         }
 
-        return voiceInfo.getContent();
+        return new AsyncResult<>(voiceInfo.getContent());
     }
 
     @Override

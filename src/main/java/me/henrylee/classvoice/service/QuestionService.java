@@ -7,6 +7,7 @@ public interface QuestionService {
 
     Question addQuestion(Question question);
 
+    Question modQuestion(Question question);
     boolean delQuestion(Question question);
 
     double compareWithAnswer(Question question, String answer);

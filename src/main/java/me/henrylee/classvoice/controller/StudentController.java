@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @CrossOrigin
 @RestController
@@ -241,7 +243,14 @@ public class StudentController {
             if (voiceInfo.getContent() != null && !voiceInfo.getContent().equals("")) {
                 info.setAnswer(voiceInfo.getContent());
             } else {
-                info.setAnswer(voiceInfoService.ASR(voiceInfo));
+                try {
+                    Future<String> asrResult = voiceInfoService.ASR(voiceInfo);
+                    while (!asrResult.isDone())
+                        Thread.sleep(1000);
+                    info.setAnswer(asrResult.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.warn("ASR thread err. e.msg: {}", e.getMessage());
+                }
             }
 
             Question question = questionService.getQuestionById(voiceInfo.getQuestionId());

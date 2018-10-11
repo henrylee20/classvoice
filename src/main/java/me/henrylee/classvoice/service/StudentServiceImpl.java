@@ -4,6 +4,7 @@ import me.henrylee.classvoice.model.*;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import me.henrylee.classvoice.model.Class;
+import me.henrylee.classvoice.model.response.StringResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,12 +136,14 @@ public class StudentServiceImpl implements StudentService {
         List<Class> classes = new ArrayList<>();
 
         boolean isChanged = false;
-        for (String classId : classIds) {
+        Iterator<String> iter = classIds.iterator();
+        while (iter.hasNext()) {
+            String classId = iter.next();
             Class clazz = classService.getClassById(classId);
             if (clazz != null) {
                 classes.add(clazz);
             } else {
-                classIds.remove(classId);
+                iter.remove();
                 isChanged = true;
             }
         }

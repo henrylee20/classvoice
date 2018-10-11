@@ -138,12 +138,14 @@ public class TeacherServiceImpl implements TeacherService {
         List<Class> classes = new ArrayList<>();
 
         boolean isChanged = false;
-        for (String classId : classIds) {
+        Iterator<String> iter = classIds.iterator();
+        while (iter.hasNext()) {
+            String classId = iter.next();
             Class clazz = classService.getClassById(classId);
             if (clazz != null) {
                 classes.add(clazz);
             } else {
-                classIds.remove(classId);
+                iter.remove();
                 isChanged = true;
             }
         }

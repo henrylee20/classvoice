@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,12 +100,20 @@ public class ClassServiceImpl implements ClassService {
         boolean isChanged = false;
         List<Question> questions = new ArrayList<>();
         List<String> questionIds = clazz.getQuestionIds();
-        for (String questionId : questionIds) {
+
+        if (questionIds == null) {
+            logger.warn("cannot get questions. classId: {}", clazz.getId());
+        }
+
+        Iterator<String> iter = questionIds.iterator();
+        while (iter.hasNext()) {
+            String questionId = iter.next();
             Question question = questionService.getQuestionById(questionId);
-            if (question != null) {
+            if (question != null &&
+                    question.getType() != null) {
                 questions.add(question);
             } else {
-                questionIds.remove(questionId);
+                iter.remove();
                 isChanged = true;
             }
         }
