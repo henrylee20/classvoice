@@ -238,7 +238,11 @@ public class StudentController {
 
             UserVoiceInfo info = new UserVoiceInfo();
             info.setVoiceId(voiceInfo.getId());
-            info.setAnswer(voiceInfo.getContent());
+            if (voiceInfo.getContent() != null && !voiceInfo.getContent().equals("")) {
+                info.setAnswer(voiceInfo.getContent());
+            } else {
+                info.setAnswer(voiceInfoService.ASR(voiceInfo));
+            }
 
             Question question = questionService.getQuestionById(voiceInfo.getQuestionId());
             if (question == null) {

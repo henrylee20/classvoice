@@ -7,6 +7,8 @@ public interface VoiceInfoService {
 
     byte[] getMP3Voice(String voiceId);
 
+    String ASR(VoiceInfo voiceInfo);
+
     VoiceInfo feedback(String voiceId, String feedback);
 
     VoiceInfo getVoiceInfo(String voiceId);

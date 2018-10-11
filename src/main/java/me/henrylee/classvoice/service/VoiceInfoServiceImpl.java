@@ -107,14 +107,7 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
             return null;
         }
 
-        // ASR voice to text
-        VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
-        if (voiceOperator == null) {
-            logger.error("Cannot get ASR class");
-        } else {
-            String result = voiceOperator.ASR(voiceInfo.getPath());
-            voiceInfo.setContent(result);
-        }
+        ASR(voiceInfo);
 
         voiceInfoRepository.save(voiceInfo);
 
@@ -145,6 +138,21 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
             return null;
         }
         return data;
+    }
+
+    @Override
+    public String ASR(VoiceInfo voiceInfo) {
+        // ASR voice to text
+        VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
+        if (voiceOperator == null) {
+            logger.error("Cannot get ASR class");
+        } else {
+            String result = voiceOperator.ASR(voiceInfo.getPath());
+            voiceInfo.setContent(result);
+            voiceInfoRepository.save(voiceInfo);
+        }
+
+        return voiceInfo.getContent();
     }
 
     @Override

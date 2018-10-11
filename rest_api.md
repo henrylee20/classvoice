@@ -1,3 +1,57 @@
+## 数据类型说明
+* Question
+	* 数据格式
+		```
+    	{
+    		"id":           问题ID(String),
+			"seq":          保留(String),
+			"chapId":       保留(String),
+			"chap":         保留(String),
+			"knowledgeId":  保留(String),
+			"knowledge":    保留(String),
+			"type":         问题类型(int),
+			"desc":         问题描述(String),
+			"option":       保留(String),
+			"answer":       标准答案(String),
+			"diffi":        保留(double),
+			"source":       保留(String)
+	    }
+		```
+    * 字段说明
+    	* type: 
+    		* null: 旧测试题
+    		* 0: 保留
+    		* 1: 判断题
+    		* 2: 填空题
+    		* 3: 比较题 
+
+* Class
+	* 数据格式
+		```
+        {
+			"id":           课堂ID(String),
+			"name":         课堂名称(String),
+			"type":         保留(String),
+			"major":        保留(String),
+			"teacherId":    教师ID(String),
+			"studentIds":   学生ID列表(String List),
+			"questionIds":  问题ID列表(String List),
+			"memo":         保留(String)
+        }
+        ```
+
+* VoiceInfo
+	* 数据格式
+	    ```
+        {
+            "questionId":   问题ID(String),
+            "question":     问题描述(String),
+            "voiceId":      录音ID(String),
+            "answer":       录音识别结果(String),
+            "feedback":     申诉修正(String)
+        }
+        ```
+
 ## 用户接口
 
 * 用户登录
@@ -105,16 +159,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "classes": [    课堂列表(Class List)
-                    {
-                        "id": 课堂ID(String),
-                        "name": 课堂名称(String),
-                        "type": 保留(String),
-                        "major": 保留(String),
-                        "teacherId": 教师ID(String),
-                        "studentIds": 学生ID列表(String List),
-                        "questionIds": 问题ID列表(String List),
-                        "memo": 保留(String)
-                    }
+                    Class 1,
+                    Class 2,
+                    ...
                 ]
             }
             ```
@@ -140,16 +187,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "classes": [    课堂列表(Class List)
-                    {
-                        "id": 课堂ID(String),
-                        "name": 课堂名称(String),
-                        "type": 保留(String),
-                        "major": 保留(String),
-                        "teacherId": 教师ID(String),
-                        "studentIds": 学生ID列表(String List),
-                        "questionIds": 问题ID列表(String List),
-                        "memo": 保留(String)
-                    }
+                    Class 1,
+                    Class 2,
+                    ...
                 ]
             }
             ```
@@ -177,19 +217,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "classes": [    课堂列表(Class List)
-                    {
-                        "id": 课堂ID(String),
-                        "name": 课堂名称(String),
-                        "type": 保留(String),
-                        "major": 保留(String),
-                        "teacherId": 教师ID(String),
-                        "studentIds": 学生ID列表(String List),
-                        "questionIds": 问题ID列表(String List),
-                        "memo": 保留(String)
-                    },
-                    {
-                        ...
-                    }
+                    Class 1,
+                    Class 2,
+                    ...
                 ]
             }
             ```
@@ -217,19 +247,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "classes": [    课堂列表(Class List)
-                    {
-                        "id": 课堂ID(String),
-                        "name": 课堂名称(String),
-                        "type": 保留(String),
-                        "major": 保留(String),
-                        "teacherId": 教师ID(String),
-                        "studentIds": 学生ID列表(String List),
-                        "questionIds": 问题ID列表(String List),
-                        "memo": 保留(String)
-                    },
-                    {
-                        ...
-                    }
+                    Class 1,
+                    Class 2,
+                    ...
                 ]
             }
             ```
@@ -257,23 +277,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "questions": [      问题列表(Question List)
-                    {
-                        "id":           问题ID(String),
-                        "seq":          保留(String),
-                        "chapId":       保留(String),
-                        "chap":         保留(String),
-                        "knowledgeId":  保留(String),
-                        "knowledge":    保留(String),
-                        "type":         保留(String),
-                        "desc":         问题描述(String),
-                        "option":       保留(String),
-                        "answer":       标准答案(String),
-                        "diffi":        保留(String),
-                        "source":       保留(String)
-                    },
-                    {
-                        ...
-                    }
+                    Question 1,
+                    Question 2,
+                    ...
                 ]
             }
             ```
@@ -293,6 +299,9 @@
             
         * 请求数据
             * `questionId`: 问题ID
+            * `openPageTime`: 打开问题页时间
+            * `startRecTime`: 录音开始时间
+            * `stopRecTime`: 录音结束时间
             * `uploadFile`: 录音二进制文件
             
         * 返回值
@@ -350,16 +359,9 @@
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
                 "voiceInfos": [     录音信息列表(VoiceInfo List)
-                    {
-                        "questionId": 问题ID(String),
-                        "question": 问题描述(String),
-                        "voiceId": 录音ID(String),
-                        "answer": 录音识别结果(String),
-                        "feedback": 申诉修正(String)
-                    },
-                    {
-                        ...
-                    }
+                    VoiceInfo 1,
+                    VoiceInfo 2,
+                    ...
                 ]
             }
             ```
@@ -388,13 +390,7 @@
             {
                 "err": 错误代码(int),
                 "errMsg": 错误信息(String),
-                "voiceInfo": {
-                    "questionId": 问题ID(String),
-                    "question": 问题描述(String),
-                    "voiceId": 录音ID(String),
-                    "answer": 录音识别结果(String),
-                    "feedback": 申诉修正(String)
-                }
+                "voiceInfo": 录音信息(VoiceInfo)
             }
             ```
         
@@ -449,16 +445,7 @@
         {
             "err": 错误代码(int),
             "errMsg": 错误信息(String),
-            "clazz": {
-                "id":           课堂ID(String),
-                "name":         课堂名称(String),
-                "type":         保留(String),
-                "major":        保留(String),
-                "teacherId":    课堂教师ID(String),
-                "studentIds":   学生ID列表(String List),
-                "questionIds":  问题ID列表(String List),
-                "memo":         保留(String)
-            }
+            "clazz": 课堂信息(Class)
         }
         ```
         
@@ -474,10 +461,19 @@
             * `token`: 会话token
             
         * 请求数据
+        
+        请求数据为`Question`数据类型，有以下要求:
+        
+            1. `id`字段不填
+            2. `desc`字段必填
+            3. `answer`字段必填
+            4. 其他字段选填
+        
         ```
         {
             "desc": 问题描述(String),
-            "answer": 标准答案(String)
+            "answer": 标准答案(String),
+            ...
         }
         ```
             
@@ -486,20 +482,7 @@
         {
             "err": 错误代码(int),
             "errMsg": 错误信息(String),
-            "question": {
-                "id":           问题ID(String),
-                "seq":          保留(String),
-                "chapId":       保留(String),
-                "chap":         保留(String),
-                "knowledgeId":  保留(String),
-                "knowledge":    保留(String),
-                "type":         保留(String),
-                "desc":         问题描述(String),
-                "option":       保留(String),
-                "answer":       标准答案(String),
-                "diffi":        保留(String),
-                "source":       保留(String)
-            }
+            "question": 问题信息(Question)
         }
         ```
         
