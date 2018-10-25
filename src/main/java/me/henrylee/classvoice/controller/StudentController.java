@@ -5,10 +5,7 @@ import me.henrylee.classvoice.model.Question;
 import me.henrylee.classvoice.model.Student;
 import me.henrylee.classvoice.model.VoiceInfo;
 import me.henrylee.classvoice.model.response.*;
-import me.henrylee.classvoice.service.ClassService;
-import me.henrylee.classvoice.service.QuestionService;
-import me.henrylee.classvoice.service.StudentService;
-import me.henrylee.classvoice.service.VoiceInfoService;
+import me.henrylee.classvoice.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @CrossOrigin
 @RestController
@@ -33,15 +32,19 @@ public class StudentController {
     private QuestionService questionService;
     private VoiceInfoService voiceInfoService;
 
+    private NLPService nlpService;
+
     @Autowired
     public StudentController(StudentService service,
                              ClassService classService,
                              QuestionService questionService,
-                             VoiceInfoService voiceInfoService) {
+                             VoiceInfoService voiceInfoService,
+                             NLPService nlpService) {
         this.studentService = service;
         this.classService = classService;
         this.questionService = questionService;
         this.voiceInfoService = voiceInfoService;
+        this.nlpService = nlpService;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{token}/getAllClasses")
@@ -177,12 +180,23 @@ public class StudentController {
         voiceInfo.setStopRecTime(stopRecTime);
 
         voiceInfo = voiceInfoService.saveVoice(voiceData, voiceInfo);
+
+        Future<String> asrResult = voiceInfoService.ASR(voiceInfo);
+
         if (voiceInfo == null) {
             logger.info("save voice failed. studentId: {}, questionId: {}", student.getId(), questionId);
             return new StringResponse(ErrMsg.SERVER_ERR);
         }
 
         studentService.addVoice(student, voiceInfo.getId());
+
+        try {
+            if (asrResult.isDone()) {
+                voiceInfo.setContent(asrResult.get());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn("asr mission is interrupted. msg: {}", e.getMessage());
+        }
 
         return new StringResponse(ErrMsg.OK, voiceInfo.getContent());
     }
@@ -243,6 +257,7 @@ public class StudentController {
             if (voiceInfo.getContent() != null && !voiceInfo.getContent().equals("")) {
                 info.setAnswer(voiceInfo.getContent());
             } else {
+                logger.info("empty voice content. start ASR. voiceId: {}", voiceId);
                 try {
                     Future<String> asrResult = voiceInfoService.ASR(voiceInfo);
                     while (!asrResult.isDone())
@@ -251,6 +266,7 @@ public class StudentController {
                 } catch (InterruptedException | ExecutionException e) {
                     logger.warn("ASR thread err. e.msg: {}", e.getMessage());
                 }
+                logger.info("ASR finished. voiceId: {}", voiceId);
             }
 
             Question question = questionService.getQuestionById(voiceInfo.getQuestionId());
@@ -310,7 +326,25 @@ public class StudentController {
     @RequestMapping(method = RequestMethod.GET, value = "/getAccuracyTmp")
     public StringResponse getAccuracyTmp(@RequestParam("answer") String answer,
                                          @RequestParam("questionId") String questionId) {
+
         double result = 0.5; // TODO now is a fake interface. studentService.getAccuracy(questionId, answer);
         return new StringResponse(ErrMsg.OK, (new Double(result)).toString());
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/getWordsTmp")
+    public StringResponse getWordsTmp(@RequestParam("answer") String answer) {
+
+        Future<List<String>> words = nlpService.getWords(answer);
+
+        try {
+            List<String> result = words.get(5, TimeUnit.SECONDS);
+            return new StringResponse(ErrMsg.OK, result.toString());
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("cut Error. msg: {}", e.getMessage());
+            return new StringResponse(ErrMsg.OK, "");
+        } catch (TimeoutException e) {
+            logger.error("cut timeout. msg: {}", e.getMessage());
+            return new StringResponse(ErrMsg.OK, "timeout");
+        }
     }
 }

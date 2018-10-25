@@ -62,7 +62,7 @@ public class TencentVoice implements VoiceOperator {
             response = aaiClient.SentenceRecognition(request);
         } catch (TencentCloudSDKException e) {
             logger.warn("ASR SDK failed. msg: {}", e.getMessage());
-            return "";
+            return "waiting for ASR";
         }
 
         if (response == null) {

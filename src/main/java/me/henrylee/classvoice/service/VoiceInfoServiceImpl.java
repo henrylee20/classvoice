@@ -32,34 +32,13 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
     @Autowired
     public VoiceInfoServiceImpl(VoiceInfoRepository voiceInfoRepository) {
         this.voiceInfoRepository = voiceInfoRepository;
-        // TODO Word segmenter init
-        // WordSegmenter.seg("Hello");
     }
 
-    private boolean prepareWavFile(byte[] voice, VoiceInfo voiceInfo) {
 
-        String mp3_path;
-        mp3_path = voiceInfo.getPath().substring(0, voiceInfo.getPath().lastIndexOf(".")) + ".mp3";
-
+    private boolean mp3Transcoding(String mp3Filename, String wavFilename) {
         try {
-            // TODO create directory which not exist
-            FileOutputStream stream = new FileOutputStream(mp3_path);
-            stream.write(voice);
-            stream.close();
-        } catch (IOException e) {
-            // TODO cannot write file
-            logger.warn(e.getMessage());
-            voiceInfo.setPath("");
-            return false;
-        }
-
-        logger.info("Saved mp3, path: " + mp3_path);
-
-        // encode mp3 to wav
-        String path = voiceInfo.getPath();
-
-        try {
-            String[] cmd = {"ffmpeg", "-i", mp3_path, "-f", "wav", "-ar", "8000", "-acodec", "pcm_s16le", path, "-y"};
+            String[] cmd = {"ffmpeg", "-i", mp3Filename,
+                    "-f", "wav", "-ar", "8000", "-acodec", "pcm_s16le", wavFilename, "-y"};
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             Process p = pb.start();
@@ -89,6 +68,34 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         return true;
     }
 
+    private boolean saveMp3File(byte[] voice, VoiceInfo voiceInfo) {
+
+        try {
+            File mp3File = new File(voiceInfo.getPath());
+
+            // create directory which not exist
+            File dir = mp3File.getParentFile();
+            if (!(dir.exists() && dir.isDirectory())) {
+                if (!dir.mkdirs()) {
+                    logger.error("cannot create dir to save voices. dir: {}", dir.getPath());
+                    return false;
+                }
+            }
+
+            FileOutputStream stream = new FileOutputStream(mp3File);
+            stream.write(voice);
+            stream.close();
+        } catch (IOException e) {
+            // TODO cannot write file
+            logger.warn(e.getMessage());
+            voiceInfo.setPath("");
+            return false;
+        }
+
+        logger.info("Saved mp3, path: " + voiceInfo.getPath());
+        return true;
+    }
+
     @Override
     public VoiceInfo saveVoice(byte[] voice, VoiceInfo baseInfo) {
 
@@ -103,14 +110,12 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
 
         voiceInfo = voiceInfoRepository.insert(voiceInfo);
 
-        voiceInfo.setPath(String.format("%s/voice.%s.wav", this.voiceRoot, voiceInfo.getId()));
 
-        if (!prepareWavFile(voice, voiceInfo)) {
+        voiceInfo.setPath(String.format("%s/voice.%s.mp3", this.voiceRoot, voiceInfo.getId()));
+        if (!saveMp3File(voice, voiceInfo)) {
             voiceInfoRepository.deleteById(voiceInfo.getId());
             return null;
         }
-
-        ASR(voiceInfo);
 
         voiceInfoRepository.save(voiceInfo);
 
@@ -143,10 +148,22 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         return data;
     }
 
-    @Async
+    @Async("ASRTaskPool")
     @Override
     public Future<String> ASR(VoiceInfo voiceInfo) {
+        String wav_path;
+        wav_path = voiceInfo.getPath().substring(0, voiceInfo.getPath().lastIndexOf(".")) + ".wav";
+
+        File wavFile = new File(wav_path);
+        if (!wavFile.exists()) {
+            if (!mp3Transcoding(voiceInfo.getPath(), wav_path)) {
+                logger.error("cannot transcoding file. file: [{}] -> [{}]", voiceInfo.getPath(), wav_path);
+                return new AsyncResult<>(voiceInfo.getContent());
+            }
+        }
+
         // ASR voice to text
+        logger.info("ASR start. voiceId: {}", voiceInfo.getId());
         VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
         if (voiceOperator == null) {
             logger.error("Cannot get ASR class");
@@ -154,6 +171,7 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
             String result = voiceOperator.ASR(voiceInfo.getPath());
             voiceInfo.setContent(result);
             voiceInfoRepository.save(voiceInfo);
+            logger.info("ASR finish. voiceId: {}", voiceInfo.getId());
         }
 
         return new AsyncResult<>(voiceInfo.getContent());

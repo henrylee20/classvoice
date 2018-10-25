@@ -12,6 +12,7 @@ public class Class {
     private String type;
     private String major;
     private String teacherId;
+    private String teacherName;
     private List<String> studentIds;
     private List<String> questionIds;
     private String memo;
@@ -54,6 +55,14 @@ public class Class {
 
     public void setTeacherId(String teacherId) {
         this.teacherId = teacherId;
+    }
+
+    public String getTeacherName() {
+        return teacherName;
+    }
+
+    public void setTeacherName(String teacherName) {
+        this.teacherName = teacherName;
     }
 
     public List<String> getStudentIds() {

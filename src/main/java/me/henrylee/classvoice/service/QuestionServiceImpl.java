@@ -2,26 +2,51 @@ package me.henrylee.classvoice.service;
 
 import me.henrylee.classvoice.model.Question;
 import me.henrylee.classvoice.model.QuestionRepository;
-import me.henrylee.classvoice.utils.WordCut;
+import me.henrylee.classvoice.nlp.Segmenter;
+import me.henrylee.classvoice.nlp.SegmenterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
+
+    private String nlpClassName = "me.henrylee.classvoice.nlp.WordSeg";
+
+    private Future<Boolean> isInitFinished;
+
     private QuestionRepository questionRepository;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Segmenter segmenter = null;
 
     @Autowired
     public QuestionServiceImpl(QuestionRepository questionRepository) {
         this.questionRepository = questionRepository;
+//      segmenter = SegmenterFactory.getWordSeg(nlpClassName);
+//      if (segmenter == null) {
+//          logger.error("Cannot get Segmenter class. className: {}", nlpClassName);
+//      }
+//      isInitFinished = initSegmentor();
+    }
+
+    @Async
+    public Future<Boolean> initSegmentor() {
+        if (segmenter == null) {
+            return new AsyncResult<>(false);
+        }
+        segmenter.init();
+        return new AsyncResult<>(true);
     }
 
     @Override
@@ -76,8 +101,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public double compareWithAnswer(Question question, String answer) {
-        List<String> standardWords = WordCut.wordCut(question.getAnswer());
-        List<String> studentWords = WordCut.wordCut(answer);
+        List<String> standardWords = segmenter.participle(question.getAnswer());
+        List<String> studentWords = segmenter.participle(answer);
 
         logger.info("Standard answer words: " + standardWords.toString());
         logger.info("Student answer words: " + studentWords.toString());

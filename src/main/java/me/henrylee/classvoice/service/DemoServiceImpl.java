@@ -2,14 +2,20 @@ package me.henrylee.classvoice.service;
 
 import me.henrylee.classvoice.model.DemoEntity;
 import me.henrylee.classvoice.model.DemoEntityRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class DemoServiceImpl implements DemoService {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private DemoEntityRepository repository;
 
@@ -49,5 +55,17 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public List<DemoEntity> getDemoByVal(String val) {
         return repository.findByVal(val);
+    }
+
+    @Override
+//  @Async("testTaskPool")
+    public CompletableFuture<String> getNameAsync(String name) {
+        logger.info("get name: {}", name);
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            logger.error("sleep err");
+        }
+        return CompletableFuture.completedFuture(name);
     }
 }

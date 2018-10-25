@@ -103,6 +103,7 @@ public class ClassServiceImpl implements ClassService {
 
         if (questionIds == null) {
             logger.warn("cannot get questions. classId: {}", clazz.getId());
+
         }
 
         Iterator<String> iter = questionIds.iterator();
@@ -113,6 +114,7 @@ public class ClassServiceImpl implements ClassService {
                     question.getType() != null) {
                 questions.add(question);
             } else {
+                logger.info("detected an question which not exist or doesn't have type. questionId: {}", questionId);
                 iter.remove();
                 isChanged = true;
             }
