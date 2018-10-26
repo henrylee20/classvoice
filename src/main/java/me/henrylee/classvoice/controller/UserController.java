@@ -49,24 +49,33 @@ public class UserController {
         WXUserInfo userInfo;
 
         // TODO this is just for debug. delete before release
-        if (code.equals("studentDebugCode")) {
-            userInfo = new WXUserInfo();
-            userInfo.setOpenid("studentDebugOpenid");
-            userInfo.setSessionKey("studentDebugSessionKey");
-        } else if (code.equals("teacherDebugCode")) {
-            userInfo = new WXUserInfo();
-            userInfo.setOpenid("teacherDebugOpenid");
-            userInfo.setSessionKey("teacherDebugSessionKey");
-        } else {
+        switch (code) {
+            case "studentDebugCode":
+                userInfo = new WXUserInfo();
+                userInfo.setOpenid("studentDebugOpenid");
+                userInfo.setSessionKey("studentDebugSessionKey");
+                break;
+            case "teacherDebugCode":
+                userInfo = new WXUserInfo();
+                userInfo.setOpenid("teacherDebugOpenid");
+                userInfo.setSessionKey("teacherDebugSessionKey");
+                break;
+            case "teacherDebugCode2":
+                userInfo = new WXUserInfo();
+                userInfo.setOpenid("oUfXb4mE-10ev-iEiEiqnhwCidqs");
+                userInfo.setSessionKey("teacherDebugSessionKey2");
+                break;
+            default:
 
-            // TODO this is for release, reserve it when release.
-            try {
-                userInfo = WXLogin.login(code);
-            } catch (Exception e) {
-                logger.error("getting openid from wx raised error. msg: {}", e.getMessage());
-                return createResponse(ErrMsg.WX_AUTH_ERR, null, null);
-            }
+                // TODO this is for release, reserve it when release.
+                try {
+                    userInfo = WXLogin.login(code);
+                } catch (Exception e) {
+                    logger.error("getting openid from wx raised error. msg: {}", e.getMessage());
+                    return createResponse(ErrMsg.WX_AUTH_ERR, null, null);
+                }
 
+                break;
         }
 
         if (userInfo == null) {

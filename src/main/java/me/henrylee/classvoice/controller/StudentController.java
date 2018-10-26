@@ -254,7 +254,10 @@ public class StudentController {
 
             UserVoiceInfo info = new UserVoiceInfo();
             info.setVoiceId(voiceInfo.getId());
-            if (voiceInfo.getContent() != null && !voiceInfo.getContent().equals("")) {
+            if (voiceInfo.getContent() != null
+                    && !voiceInfo.getContent().equals("")) {
+                // TODO deal with asr accuracy
+                //&& voiceInfo.getAsrAccuracy() > 0.1) {
                 info.setAnswer(voiceInfo.getContent());
             } else {
                 logger.info("empty voice content. start ASR. voiceId: {}", voiceId);
@@ -268,6 +271,7 @@ public class StudentController {
                 }
                 logger.info("ASR finished. voiceId: {}", voiceId);
             }
+            info.setAsrAccuracy(voiceInfo.getAsrAccuracy());
 
             Question question = questionService.getQuestionById(voiceInfo.getQuestionId());
             if (question == null) {
@@ -309,6 +313,7 @@ public class StudentController {
         info.setVoiceId(voiceInfo.getId());
         info.setAnswer(voiceInfo.getContent());
         info.setFeedback(voiceInfo.getFeedback());
+        info.setAsrAccuracy(voiceInfo.getAsrAccuracy());
 
         Question question = questionService.getQuestionById(voiceInfo.getQuestionId());
         if (question == null) {
@@ -327,20 +332,17 @@ public class StudentController {
     public StringResponse getAccuracyTmp(@RequestParam("answer") String answer,
                                          @RequestParam("questionId") String questionId) {
 
-        double result = 0.5; // TODO now is a fake interface. studentService.getAccuracy(questionId, answer);
+        double result = 0.5; // TODO now is a fake interface. studentService.getAsrAccuracy(questionId, answer);
         return new StringResponse(ErrMsg.OK, (new Double(result)).toString());
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/getWordsTmp")
-    public StringResponse getWordsTmp(@RequestParam("answer") String answer) {
-
-        Future<List<String>> words = nlpService.getWords(answer);
-
+    @RequestMapping(method = RequestMethod.GET, value = "/getAsrAccuracy")
+    public StringResponse getAsrAccuracy(@RequestParam("sentence") String sentence) {
         try {
-            List<String> result = words.get(5, TimeUnit.SECONDS);
-            return new StringResponse(ErrMsg.OK, result.toString());
+            Future<Double> result = nlpService.getAsrAccuracy(sentence);
+            return new StringResponse(ErrMsg.OK, result.get(5, TimeUnit.SECONDS).toString());
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("cut Error. msg: {}", e.getMessage());
+            logger.error("cut Error. msg: {}, stack: {}", e.getMessage(), e.getStackTrace());
             return new StringResponse(ErrMsg.OK, "");
         } catch (TimeoutException e) {
             logger.error("cut timeout. msg: {}", e.getMessage());

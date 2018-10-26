@@ -8,7 +8,8 @@ public class VoiceInfo {
     private String id;
     private String path;
     private String content;
-    private double accuracy;
+    private double contentAccuracy;
+    private double asrAccuracy;
     private String studentId;
     private String questionId;
     private String feedback;
@@ -42,12 +43,20 @@ public class VoiceInfo {
         this.content = content;
     }
 
-    public double getAccuracy() {
-        return accuracy;
+    public double getContentAccuracy() {
+        return contentAccuracy;
     }
 
-    public void setAccuracy(double accuracy) {
-        this.accuracy = accuracy;
+    public void setContentAccuracy(double contentAccuracy) {
+        this.contentAccuracy = contentAccuracy;
+    }
+
+    public double getAsrAccuracy() {
+        return asrAccuracy;
+    }
+
+    public void setAsrAccuracy(double asrAccuracy) {
+        this.asrAccuracy = asrAccuracy;
     }
 
     public String getStudentId() {

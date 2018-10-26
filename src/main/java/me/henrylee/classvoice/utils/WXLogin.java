@@ -29,7 +29,7 @@ public class WXLogin {
         logger.debug(response);
 
         if (response.contains("\"errcode\":")) {
-            logger.warn("err! response: %s", response);
+            logger.warn("err! response: {}", response);
             return null;
         }
 
@@ -48,7 +48,7 @@ public class WXLogin {
         end = response.indexOf("\"", start);
         String session_key = response.substring(start, end);
 
-        logger.debug(String.format("openid: %s, session_key: %s", openid, session_key));
+        logger.debug(String.format("openid: {}, session_key: {}", openid, session_key));
 
         WXUserInfo result = new WXUserInfo();
         result.setOpenid(openid);

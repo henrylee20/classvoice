@@ -39,4 +39,10 @@ public class NLPService {
         return new AsyncResult<>(result);
     }
 
+    @Async("NLPTaskPool")
+    public Future<Double> getAsrAccuracy(String sentence) {
+        double result = this.segmenter.sentenceScore(sentence);
+        return new AsyncResult<>(result);
+    }
+
 }

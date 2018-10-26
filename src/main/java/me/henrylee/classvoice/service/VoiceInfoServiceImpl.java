@@ -4,7 +4,6 @@ import me.henrylee.classvoice.model.VoiceInfo;
 import me.henrylee.classvoice.model.VoiceInfoRepository;
 import me.henrylee.classvoice.voice.VoiceOperator;
 import me.henrylee.classvoice.voice.VoiceOperatorFactory;
-import org.apdplat.word.WordSegmenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Service
@@ -27,11 +27,14 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
     private String voiceRoot;
 
     private VoiceInfoRepository voiceInfoRepository;
+    private NLPService nlpService;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public VoiceInfoServiceImpl(VoiceInfoRepository voiceInfoRepository) {
+    public VoiceInfoServiceImpl(VoiceInfoRepository voiceInfoRepository,
+                                NLPService nlpService) {
         this.voiceInfoRepository = voiceInfoRepository;
+        this.nlpService = nlpService;
     }
 
 
@@ -111,7 +114,7 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         voiceInfo = voiceInfoRepository.insert(voiceInfo);
 
 
-        voiceInfo.setPath(String.format("%s/voice.%s.mp3", this.voiceRoot, voiceInfo.getId()));
+        voiceInfo.setPath(String.format("%s/voice/%s.mp3", this.voiceRoot, voiceInfo.getId()));
         if (!saveMp3File(voice, voiceInfo)) {
             voiceInfoRepository.deleteById(voiceInfo.getId());
             return null;
@@ -167,13 +170,25 @@ public class VoiceInfoServiceImpl implements VoiceInfoService {
         VoiceOperator voiceOperator = VoiceOperatorFactory.getVoiceOperator(this.asrClassName);
         if (voiceOperator == null) {
             logger.error("Cannot get ASR class");
+            return new AsyncResult<>("");
         } else {
-            String result = voiceOperator.ASR(voiceInfo.getPath());
+            String result = voiceOperator.ASR(wav_path);
             voiceInfo.setContent(result);
-            voiceInfoRepository.save(voiceInfo);
             logger.info("ASR finish. voiceId: {}", voiceInfo.getId());
         }
 
+        // TODO should put this to another thread. do not block ASR thread
+        logger.info("Start score ASR result. Text: {}", voiceInfo.getContent());
+        double result = 0;
+        try {
+            result = nlpService.getAsrAccuracy(voiceInfo.getContent()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("score ASR result thread error. msg: {}", e.getMessage());
+        }
+        voiceInfo.setAsrAccuracy(result);
+        logger.info("ASR score: {}", result);
+
+        voiceInfoRepository.save(voiceInfo);
         return new AsyncResult<>(voiceInfo.getContent());
     }
 
